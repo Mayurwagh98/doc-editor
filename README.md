@@ -183,3 +183,5 @@ With another 2-4 hours:
 - Full-text search across document content
 - Email notifications on share
 - Role-based permission beyond owner/editor/viewer
+
+Live frontend URL: https://doc-editor-ruby.vercel.app/login
