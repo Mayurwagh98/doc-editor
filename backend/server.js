@@ -1,11 +1,11 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const path = require('path');
-const connectDB = require('./config/db');
+require("dotenv").config();
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
+const connectDB = require("./config/db");
 
-const authRoutes = require('./routes/auth');
-const documentRoutes = require('./routes/documents');
+const authRoutes = require("./routes/auth");
+const documentRoutes = require("./routes/documents");
 
 const app = express();
 
@@ -13,23 +13,41 @@ const app = express();
 connectDB();
 
 // Middleware
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
-  credentials: true,
-}));
-app.use(express.json({ limit: '10mb' }));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      const allowed = [
+        process.env.CLIENT_URL,
+        "http://localhost:5173",
+        "http://localhost:5174",
+      ];
+      // Allow any vercel.app subdomain
+      if (
+        !origin ||
+        allowed.includes(origin) ||
+        origin.endsWith(".vercel.app")
+      ) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  }),
+);
+app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));
 
 // Serve uploaded files statically
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/documents', documentRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/documents", documentRoutes);
 
 // Health check
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // 404 handler
@@ -42,8 +60,8 @@ app.use((err, req, res, next) => {
   console.error(err.stack);
   const statusCode = err.statusCode || 500;
   res.status(statusCode).json({
-    message: err.message || 'Internal Server Error',
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
+    message: err.message || "Internal Server Error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });
 });
 
